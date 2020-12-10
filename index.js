@@ -176,6 +176,73 @@ MongoClient.connect(config.mongo_con,  {
         )
         
 
+        app.post(
+            '/getcourse',
+            (req,res) => {
+                sessionCollection.find({
+                    ["students."+req.body.regno]: {
+                        $exists: true
+                    }
+                },{
+                    projection:{
+                        _id: true,
+                        ["students."+req.body.regno]: true
+                    } 
+                }).toArray().then(result => {
+                    var totalCredits = 0.0;
+                    var totalCreditsScored = 0.0;
+                    var response = result.map((value,index) => {
+                        var courses = value.students[req.body.regno].courses;
+                        var r = Object.keys(courses).reduce(
+                            (agg,value)=>{
+                                var course = courses[value];
+                                var credit = course.credits;
+                                var scored = gradepoints[course.grade];
+                                
+                                // update credit and scored with respect to reattempts
+                                var r = Object.keys(course.reattempt).reduce(
+                                    (agg,value) => {
+                                        return {
+                                            credit : Math.max(agg.credit,course.reattempt[value].credits),
+                                            scored : Math.max(agg.scored,gradepoints[course.reattempt[value].grade])
+                                        }
+                                    },{
+                                        credit:credit,
+                                        scored:scored
+                                    }
+                                )
+
+                                credit = r.credit;
+                                scored = r.scored;
+
+                                return {
+                                    creditScored:agg.creditScored+(scored*credit),
+                                    maxCredits:agg.maxCredits+credit     
+                                }
+
+                            },{creditScored:0.0,maxCredits:0.0});
+                        
+                        totalCreditsScored += r.creditScored;
+                        totalCredits += r.maxCredits;
+
+                        var rp = {
+                            "spi":r.creditScored/r.maxCredits,
+                            "cpi":totalCreditsScored/totalCredits
+                        }
+                    
+                        return rp;
+                        // return cpi spi pair
+                    });    
+                    
+                    res.send(response);
+
+                }).catch(
+                    error => res.send(error)
+                )
+            }
+        )
+        
+
         
         app.listen(3000, () => {
             console.log('listening on 3000');
