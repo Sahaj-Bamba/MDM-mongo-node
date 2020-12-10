@@ -171,10 +171,6 @@ MongoClient.connect(config.mongo_con, {
               { creditScored: 0.0, maxCredits: 0.0 }
             );
 
-            console.log(totalCreditsScored);
-            console.log(totalCredits);
-            console.log(r);
-            
             totalCreditsScored += r.creditScored;
             totalCredits += r.maxCredits;
 
@@ -193,7 +189,6 @@ MongoClient.connect(config.mongo_con, {
     });
 
     app.post("/getcourse", (req, res) => {
-      console.log(req.body.regno);
       sessionCollection
         .find(
           {
@@ -214,7 +209,6 @@ MongoClient.connect(config.mongo_con, {
           var totalCredits = 0.0;
           var totalCreditsScored = 0.0;
           var response = result.map((value, index) => {
-            console.log(index);
             var courses = value.students[req.body.regno].courses;
             var r = Object.keys(courses).reduce(
               (agg, value) => {
@@ -266,12 +260,9 @@ MongoClient.connect(config.mongo_con, {
               spi: r.creditScored / r.maxCredits,
               cpi: totalCreditsScored / totalCredits,
             };
-            console.log(rp);
             return rp;
             // return cpi spi pair
           });
-          console.log("resp");
-          console.log(response);
           res.send(response);
         })
         .catch((error) => res.send(error));
