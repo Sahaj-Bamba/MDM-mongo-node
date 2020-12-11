@@ -255,7 +255,7 @@ MongoClient.connect(config.mongo_con, {
     });
 
     app.post("/getcoursebycode", (req, res) => {
-      sessionCollection
+      courseCollection
         .findOne(
           {
             _id : req.body.session,
