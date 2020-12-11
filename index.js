@@ -210,57 +210,13 @@ MongoClient.connect(config.mongo_con, {
           var totalCreditsScored = 0.0;
           var response = result.map((value, index) => {
             var courses = value.students[req.body.regno].courses;
-            var r = Object.keys(courses).reduce(
-              (agg, value) => {
+            var r = Object.keys(courses).map(
+              (value) => {
                 var course = courses[value];
-                var credit = course.credits;
-                var scored = gradepoints[course.grade];
-
-                // update credit and scored with respect to reattempts
-
-                var r = course.reattempt
-                  ? Object.keys(course.reattempt).reduce(
-                      (agg, value) => {
-                        return {
-                          credit: Math.max(
-                            agg.credit,
-                            course.reattempt[value].credits
-                          ),
-                          scored: Math.max(
-                            agg.scored,
-                            gradepoints[course.reattempt[value].grade]
-                          ),
-                        };
-                      },
-                      {
-                        credit: credit,
-                        scored: scored,
-                      }
-                    )
-                  : {
-                      credit: credit,
-                      scored: scored,
-                    };
-
-                credit = r.credit;
-                scored = r.scored;
-
-                return {
-                  creditScored: agg.creditScored + scored * credit,
-                  maxCredits: agg.maxCredits + credit,
-                };
-              },
-              { creditScored: 0.0, maxCredits: 0.0 }
+                return course;
+              }
             );
-
-            totalCreditsScored += r.creditScored;
-            totalCredits += r.maxCredits;
-
-            var rp = {
-              spi: r.creditScored / r.maxCredits,
-              cpi: totalCreditsScored / totalCredits,
-            };
-            return rp;
+            return r;
             // return cpi spi pair
           });
           res.send(response);
