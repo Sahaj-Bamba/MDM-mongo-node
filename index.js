@@ -57,7 +57,17 @@ MongoClient.connect(config.mongo_con, {
         })
         .catch((error) => res.send(error));
     });
-    app.post("/addStudent", (req, res) => {
+app.post("/getc", (req, res) => {
+      courseCollection
+        .find()
+        .toArray()
+        .then((result) => {
+          res.send(result);
+        })
+        .catch((error) => res.send(error));
+    });
+	  
+	  app.post("/addStudent", (req, res) => {
       sessionCollection
         .updateOne(
           { _id: req.body.session },
@@ -101,7 +111,7 @@ MongoClient.connect(config.mongo_con, {
             $set: {
               ["courses." +
               req.body.course.courseID]: {
-                "courseName" : [req.body.course.courseID],
+                "courseName" : [req.body.course.courseName],
                 "credits" : [req.body.course.credits],
                 "professor" : [req.body.course.professor]
               }
@@ -263,15 +273,16 @@ MongoClient.connect(config.mongo_con, {
           {
             projection: {
               _id: true,
-              ["course." + req.body.code]: true,
+              ["courses." + req.body.code]: true,
             },
           }
         )
         .then((result) => {
           console.log(result);
+
         var response = null;
         if(result){
-          response = result.course[req.body.code];
+          response = result.courses[req.body.code];
         }
           
        res.send(response);
