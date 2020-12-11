@@ -111,9 +111,9 @@ app.post("/getc", (req, res) => {
             $set: {
               ["courses." +
               req.body.course.courseID]: {
-                "courseName" : [req.body.course.courseName],
-                "credits" : [req.body.course.credits],
-                "professor" : [req.body.course.professor]
+                "courseName" : req.body.course.courseName,
+                "credits" : req.body.course.credits,
+                "professor" : req.body.course.professor
               }
             },
           }
