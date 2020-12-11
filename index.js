@@ -28,6 +28,7 @@ MongoClient.connect(config.mongo_con, {
   .then((client) => {
     const db = client.db("mdmnode");
     const sessionCollection = db.collection("session");
+    const courseCollection = db.collection("course");
 
     app.get("/test", (req, res) => {
       res.send("testing");
@@ -35,6 +36,12 @@ MongoClient.connect(config.mongo_con, {
 
     app.post("/addSession", (req, res) => {
       sessionCollection
+        .insertOne(req.body)
+        .then((result) => {
+          res.send(result);
+        })
+        .catch((error) => res.send(error));
+      courseCollection
         .insertOne(req.body)
         .then((result) => {
           res.send(result);
@@ -84,6 +91,29 @@ MongoClient.connect(config.mongo_con, {
           res.send(result);
         })
         .catch((error) => res.send(error));
+      
+      courseCollection
+        .updateOne(
+          {
+            _id: req.body.session,
+          },
+          {
+            $set: {
+              ["courses." +
+              req.body.course.courseID]: {
+                "courseName" : [req.body.course.courseID],
+                "credits" : [req.body.course.credits],
+                "professor" : [req.body.course.professor]
+              }
+            },
+          }
+        )
+        .then((result) => {
+          res.send(result);
+        })
+        .catch((error) => res.send(error));
+      
+      
     });
     app.post("/addReattempt", (req, res) => {
       sessionCollection
@@ -220,6 +250,32 @@ MongoClient.connect(config.mongo_con, {
             // return cpi spi pair
           });
           res.send(response);
+        })
+        .catch((error) => res.send(error));
+    });
+
+    app.post("/getcoursebycode", (req, res) => {
+      sessionCollection
+        .findOne(
+          {
+            _id : req.body.session,
+          },
+          {
+            projection: {
+              _id: true,
+              ["course." + req.body.code]: true,
+            },
+          }
+        )
+        .then((result) => {
+          console.log(result);
+        var response = null;
+        if(result){
+          response = result.course[req.body.code];
+        }
+        return response;
+          
+       res.send(response);
         })
         .catch((error) => res.send(error));
     });
