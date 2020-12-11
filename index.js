@@ -273,7 +273,6 @@ MongoClient.connect(config.mongo_con, {
         if(result){
           response = result.course[req.body.code];
         }
-        return response;
           
        res.send(response);
         })
